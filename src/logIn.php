@@ -2,6 +2,12 @@
 require_once './includes/config.php';
 session_start();
 
+if(isset($_SESSION["userId"]) and $_SESSION["role"] === "Admin"){
+    header("Location: admin.php");
+}else if (isset($_SESSION["userId"]) and $_SESSION["role"] === "User"){
+    header("Location: booking.php");
+}
+
 
 $errors = [];
 
@@ -20,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
     }
 
     if (empty($errors)) {
-        $query = $conn->prepare("SELECT userID, FullName, Email, Password, Role from users WHERE email = ?");
+        $query = $conn->prepare("SELECT userID, FirstName, LastName, FullName, Email, Password, Role from users WHERE email = ?");
         $query->bind_param("s", $email);
         $query->execute();
         $result = $query->get_result();
@@ -31,13 +37,16 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
             if (password_verify($password, $user['Password'])) {
 
                 $_SESSION['userId'] = $user['userID'];
+                $_SESSION['firstName'] = $user['FirstName'];
+                $_SESSION['lastName'] = $user['LastName'];
                 $_SESSION['fullName'] = $user['FullName'];
+                $_SESSION['email'] = $user['Email'];
                 $_SESSION['role'] = $user['Role'];
 
                 if ($user['Role'] === 'Admin') {
                     header("Location: admin.php");
                 } else {
-                    header("Location:home.php");
+                    header("Location:booking.php");
                 }
             }
 
@@ -98,7 +107,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
                         <div class="mb-2">
                             <label class="form-label" for="email">Email</label>
                             <input type="email" name="email" id="email" class="form-control  
-                            <?php echo (!isset($errors['logIn']) ? '' : 'is-invalid')  ?>" placeholder="e.g., princesuperpogi@email.com" required>
+                            <?php echo (!isset($errors['logIn']) ? '' : 'is-invalid')  ?>"  value="<?php echo(htmlspecialchars($email ?? '')) ?>" required>
                         </div>
 
                         <!-- Password -->
@@ -109,7 +118,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
                             
                             <?php echo (!isset($errors['logIn']) ? '' : 'is-invalid')  ?>
 
-                            " required>
+                            "   value="<?php echo(htmlspecialchars($password ?? '')) ?>" required>
                             <?php if(isset($errors['logIn'])):?>
                                 <small class="text-danger"><?php echo $errors['logIn']?></small>
                             <?php endif?>

@@ -58,7 +58,3 @@ function showAboutInfo(content, name) {
 
 }
 
-
-
-
-    

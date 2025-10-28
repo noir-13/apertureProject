@@ -145,11 +145,11 @@
 
 
   <section class="w-100 py-5  min-vh-100 d-flex flex-column justify-content-center align-items-center " id="services">
-            
+
 
     <div class="container py-5 px-4  m-0 bg-light justify-content-center align-items-center rounded-5 shadow">
-      
-      
+
+
       <div class="row gap-2 mb-2 justify-content-center">
         <div class="col-lg-5 rounded align-content-end p-3">
           <h1 class="fw-bold serif">Personalized Sessions for Life's Milestones</h1>
@@ -336,22 +336,20 @@
       <div class="row priceRow justify-content-center align-items-center gap-2">
         <div class="card col-md-4 py-3 px-2 rounded-4 justify-content-center align-items-center border-1 shadow">
           <div class="text-center mb-3">
-            <h1 class="card-title">Basic</h1>
+            <h1 class="card-title">Essential Package</h1>
           </div>
 
           <div class="price d-flex justify-content-center align-content-center align-items-end gap-2">
-            <h1 class="fw-bold text-dark">&#8369;1000</h1>
-            <p>/per hour</p>
+            <h1 class="fw-bold text-dark">&#8369;7,500</h1>
           </div>
 
-          <div class="card-body mb-5">
-            <ul>
-              <li>Professional photographer or videographer</li>
-              <li>High-resolution edited photos/videos</li>
-              <li>Online gallery delivery</li>
-              <li>Basic color correction</li>
-              <li>Up to 10 final images/videos</li>
-              <li>Pre-event consultation</li>
+          <div class="card-body mb-5 p-0">
+            <ul class="text-start">
+              <li class="text-start">3 Hours of Coverage</li>
+              <li class="text-start">40+ Professionally Edited Photos</li>
+              <li class="text-start">1–2 Minute Highlight Video</li>
+              <li class="text-start">Basic Color Grading & Audio Sync</li>
+              <li class="text-start">Online Gallery Access (1 Month)</li>
             </ul>
           </div>
 
@@ -361,24 +359,26 @@
 
         <div class="card col-md-4 py-3 px-2 rounded-4 justify-content-center align-items-center border-1 shadow">
           <div class="text-center mb-6">
-            <h1 class="card-title">Standard</h1>
+            <h1 class="card-title">Elite Package</h1>
           </div>
 
           <div class="price d-flex justify-content-center align-content-center align-items-end gap-2">
-            <h1 class="fw-bold text-dark">&#8369;2000</h1>
-            <p>/per hour</p>
+            <h1 class="fw-bold text-dark">&#8369;15,000</h1>
           </div>
 
-          <div class="card-body mb-5">
+          <div class="card-body mb-5 p-0">
             <ul>
-              <li>Experienced photographer or videographer</li>
-              <li>High-resolution edited photos/videos</li>
-              <li>Online gallery with download option</li>
-              <li>Advanced color correction & retouching</li>
-              <li>Up to 30 final images/videos</li>
-              <li>Basic photo album or highlight video</li>
-              <li>Pre-event consultation</li>
+              <li class="text-start">4 Hours of Coverage</li>
+              <li class="text-start">100+ Professionally Edited Photos</li>
+              <li class="text-start">3–5 Minute Highlight Film</li>
+              <li class="text-start">Full Event Video (10–15 minutes)</li>
+              <li class="text-start">Drone Coverage (optional, add-on)</li>
+              <li class="text-start">Audio Recording for Speeches or Vows</li>
+              <li class="text-start">On-Site Lighting Setup</li>
+              <li class="text-start">Online Gallery Access (3 Months)</li>
             </ul>
+
+
           </div>
 
           <button class="rounded-pill w-75 border-1">Book Now</button>
@@ -391,20 +391,21 @@
           </div>
 
           <div class="price d-flex justify-content-center align-content-center align-items-end gap-2">
-            <h1 class="fw-bold text-dark">&#8369;3000 </h1>
-            <p>/per hour</p>
+            <h1 class="fw-bold text-dark">&#8369;25,000 </h1>
           </div>
 
-          <div class="card-body mb-5">
+          <div class="card-body mb-5 p-0">
             <ul>
-              <li>Senior photographer or videographer</li>
-              <li>Full event coverage</li>
-              <li>High-resolution edited photos/videos</li>
-              <li>Premium retouching and color grading</li>
-              <li>Up to 60 final images/videos</li>
-              <li>Custom photo album or full highlight video</li>
-              <li>Pre-event planning & consultation</li>
-              <li>Priority scheduling and support</li>
+              <li class="text-start">8 Hours of Coverage</li>
+              <li class="text-start">Unlimited Raw Photos + 200 Edited Photos</li>
+              <li class="text-start">7–10 Minute Cinematic Highlight Film (Full HD)</li>
+              <li class="text-start">Full Event Film (20+ minutes)</li>
+              <li class="text-start">Drone Coverage Included</li>
+              <li class="text-start">Same-Day Edit (SDE) Included</li>
+              <li class="text-start">Audio Mixing & Cinematic Color Grading</li>
+              <li class="text-start">Personalized Online Gallery (1 Year Access)</li>
+              <li class="text-start">1 Premium USB Copy with Case</li>
+              <li class="text-start">1 Printed Photo Album (40 Pages)</li>
             </ul>
           </div>
 
@@ -421,6 +422,8 @@
 
     </div>
   </section>
+
+
 
   <!------------------------------------- PRICING SECTION-------------------------------------------->
 

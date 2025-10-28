@@ -1,5 +1,12 @@
 <?php 
 $emailSent = isset($_POST['email']) ? $_POST['email'] : 'xxxx@email.com';
+
+$emailHidden = $emailSent;
+
+for($i = 1; $i < strlen($emailSent)-10; $i++){
+    $emailHidden[$i] = '*';
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -16,9 +23,6 @@ $emailSent = isset($_POST['email']) ? $_POST['email'] : 'xxxx@email.com';
 
 <body>
     <!-- <?php include './includes/header.php'; ?> -->
-
-
-
 
 
     <section class="w-100 min-vh-100  p-0 p-sm-2  d-flex justify-content-center align-items-center position-relative" id="forgot1">
@@ -38,7 +42,7 @@ $emailSent = isset($_POST['email']) ? $_POST['email'] : 'xxxx@email.com';
 
                      <div class="text-center mb-3">
                             <h1 class=" display-3 m-0 serif">Check your email</h1>
-                            <p>Enter the verification code we just sent to <?php echo $emailSent?></p>
+                            <p>Enter the verification code we just sent to <?php echo $emailHidden?></p>
                         </div>
 
                         <div class="d-flex gap-3 justify-content-center align-items-center mb-4" id="verificationCode">
