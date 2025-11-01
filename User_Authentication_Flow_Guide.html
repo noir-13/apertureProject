@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Authentication & Profile Completion Flow - Implementation Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 50px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            border-bottom: 4px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            padding-left: 15px;
+            border-left: 5px solid #3498db;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        h4 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .flow-diagram {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            line-height: 2;
+        }
+
+        .flow-step {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        table th {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        table tr:hover {
+            background: #e8f4f8;
+        }
+
+        pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 4px solid #61afef;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .keyword {
+            color: #c678dd;
+        }
+
+        .string {
+            color: #98c379;
+        }
+
+        .comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        .function {
+            color: #61afef;
+        }
+
+        .variable {
+            color: #e06c75;
+        }
+
+        .number {
+            color: #d19a66;
+        }
+
+        .sql-keyword {
+            color: #56b6c2;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .note strong {
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .success strong {
+            color: #155724;
+        }
+
+        .info {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .info strong {
+            color: #0c5460;
+        }
+
+        .file-structure {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+        }
+
+        .file-structure ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .file-structure li {
+            padding: 5px 0;
+        }
+
+        .file-structure li:before {
+            content: "📁 ";
+            margin-right: 5px;
+        }
+
+        .file-structure li.file:before {
+            content: "📄 ";
+        }
+
+        .scenario {
+            background: #e7f3ff;
+            border: 2px solid #2196F3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .scenario h4 {
+            color: #1976D2;
+            margin-top: 0;
+        }
+
+        ol {
+            padding-left: 25px;
+            margin: 15px 0;
+        }
+
+        ol li {
+            margin: 10px 0;
+        }
+
+        ul {
+            padding-left: 25px;
+            margin: 15px 0;
+        }
+
+        ul li {
+            margin: 8px 0;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            pre {
+                page-break-inside: avoid;
+            }
+
+            h2, h3 {
+                page-break-after: avoid;
+            }
+        }
+
+        .emoji {
+            font-style: normal;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>User Authentication & Profile Completion Flow</h1>
+        <p style="font-size: 1.1em; color: #666; margin-bottom: 30px;">
+            A comprehensive implementation guide for email verification, first-login profile completion,
+            and persistent profile state management.
+        </p>
+
+        <h2><span class="emoji">🎯</span> Complete User Flow</h2>
+        <div class="flow-diagram">
+<strong>1. Registration Page (register.php)</strong>
+   ↓ Submit email + password
+
+<strong>2. Email Verification</strong>
+   ↓ User receives verification link
+   ↓ Clicks link → email verified
+
+<strong>3. First Login (index.php/login.php)</strong>
+   ↓ Login with credentials
+   ↓ System checks: Is profile completed?
+
+<strong>4a. IF profile NOT completed</strong> → Redirect to completeProfile.php
+<strong>4b. IF profile completed</strong> → Redirect to homepage/booking.php
+
+<strong>5. Complete Profile Form</strong>
+   ↓ User fills out additional info
+   ↓ Submit → Profile marked as "completed"
+
+<strong>6. Continue browsing</strong> (normal user experience)
+        </div>
+
+        <h2><span class="emoji">🔑</span> Key Concept: User Status Tracking</h2>
+        <p>
+            You need to track <strong>3 user states</strong> in your database to properly manage
+            the authentication and profile completion flow:
+        </p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>State</th>
+                    <th>email_verified</th>
+                    <th>profile_completed</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Just registered</td>
+                    <td>0</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Email verified, not logged in yet</td>
+                    <td>1</td>
+                    <td>0</td>
+                </tr>
+                <tr>
+                    <td>Logged in but profile incomplete</td>
+                    <td>1</td>
+                    <td>0</td>
+                </tr>
+                <tr style="background: #d4edda; font-weight: bold;">
+                    <td>Fully set up</td>
+                    <td>1</td>
+                    <td>1</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2><span class="emoji">📊</span> Database Structure</h2>
+        <p>Add these columns to your <code>users</code> table:</p>
+
+        <pre>ALTER TABLE users
+ADD COLUMN email_verified TINYINT(1) DEFAULT 0,
+ADD COLUMN profile_completed TINYINT(1) DEFAULT 0,
+ADD COLUMN verification_token VARCHAR(64) NULL,
+ADD COLUMN token_expires_at DATETIME NULL;</pre>
+
+        <h2><span class="emoji">🗂️</span> File Organization</h2>
+
+        <h3>1. auth.php - Authentication Functions</h3>
+        <p><strong>Location:</strong> <code>src/includes/functions/auth.php</code></p>
+        <p>This file contains all authentication-related functions:</p>
+
+        <pre><span class="comment">// User registration with email verification</span>
+<span class="keyword">function</span> <span class="function">registerUser</span>(<span class="variable">$email</span>, <span class="variable">$password</span>) { }
+
+<span class="comment">// Verify email token</span>
+<span class="keyword">function</span> <span class="function">verifyEmail</span>(<span class="variable">$token</span>) { }
+
+<span class="comment">// User login</span>
+<span class="keyword">function</span> <span class="function">loginUser</span>(<span class="variable">$email</span>, <span class="variable">$password</span>) { }
+
+<span class="comment">// Check if user needs to complete profile</span>
+<span class="keyword">function</span> <span class="function">needsProfileCompletion</span>(<span class="variable">$userId</span>) { }
+
+<span class="comment">// Logout user</span>
+<span class="keyword">function</span> <span class="function">logoutUser</span>() { }</pre>
+
+        <h3>2. function.php - General/Business Logic Functions</h3>
+        <p><strong>Location:</strong> <code>src/includes/functions/function.php</code></p>
+        <p>This file contains general application logic:</p>
+
+        <pre><span class="comment">// Save user profile information</span>
+<span class="keyword">function</span> <span class="function">saveUserProfile</span>(<span class="variable">$userId</span>, <span class="variable">$data</span>) { }
+
+<span class="comment">// Get package details (already exists)</span>
+<span class="keyword">function</span> <span class="function">getPackageDetails</span>() { }
+
+<span class="comment">// Send verification email</span>
+<span class="keyword">function</span> <span class="function">sendVerificationEmail</span>(<span class="variable">$email</span>, <span class="variable">$token</span>) { }</pre>
+
+        <div style="page-break-before: always;"></div>
+
+        <h2><span class="emoji">📝</span> Step-by-Step Implementation Guide</h2>
+
+        <h3>Step 1: Registration Flow</h3>
+
+        <h4>register.php - Registration Page</h4>
+        <pre><span class="keyword">&lt;?php</span>
+<span class="keyword">require_once</span> <span class="string">'includes/config.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'includes/functions/auth.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'includes/functions/function.php'</span>;
+
+<span class="keyword">if</span>(<span class="variable">$_SERVER</span>[<span class="string">'REQUEST_METHOD'</span>] == <span class="string">'POST'</span>) {
+    <span class="variable">$email</span> = <span class="variable">$_POST</span>[<span class="string">'email'</span>];
+    <span class="variable">$password</span> = <span class="variable">$_POST</span>[<span class="string">'password'</span>];
+
+    <span class="comment">// Call auth function</span>
+    <span class="variable">$result</span> = <span class="function">registerUser</span>(<span class="variable">$email</span>, <span class="variable">$password</span>);
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>[<span class="string">'success'</span>]) {
+        <span class="comment">// Redirect to "check your email" page</span>
+        <span class="function">header</span>(<span class="string">"Location: checkEmail.php"</span>);
+        <span class="keyword">exit</span>;
+    } <span class="keyword">else</span> {
+        <span class="variable">$error</span> = <span class="variable">$result</span>[<span class="string">'error'</span>];
+    }
+}
+<span class="keyword">?&gt;</span></pre>
+
+        <h4>auth.php - registerUser() Function</h4>
+        <pre><span class="keyword">function</span> <span class="function">registerUser</span>(<span class="variable">$email</span>, <span class="variable">$password</span>) {
+    <span class="keyword">global</span> <span class="variable">$conn</span>;
+
+    <span class="comment">// 1. Validate email doesn't exist</span>
+    <span class="variable">$check</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"SELECT id FROM users WHERE email = ?"</span>);
+    <span class="variable">$check</span>-&gt;<span class="function">bind_param</span>(<span class="string">'s'</span>, <span class="variable">$email</span>);
+    <span class="variable">$check</span>-&gt;<span class="function">execute</span>();
+    <span class="keyword">if</span>(<span class="variable">$check</span>-&gt;<span class="function">get_result</span>()-&gt;num_rows &gt; <span class="number">0</span>) {
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>, <span class="string">'error'</span> =&gt; <span class="string">'Email already exists'</span>];
+    }
+
+    <span class="comment">// 2. Hash password</span>
+    <span class="variable">$hashedPassword</span> = <span class="function">password_hash</span>(<span class="variable">$password</span>, PASSWORD_DEFAULT);
+
+    <span class="comment">// 3. Generate verification token</span>
+    <span class="variable">$token</span> = <span class="function">bin2hex</span>(<span class="function">random_bytes</span>(<span class="number">32</span>));
+    <span class="variable">$tokenExpiry</span> = <span class="function">date</span>(<span class="string">'Y-m-d H:i:s'</span>, <span class="function">strtotime</span>(<span class="string">'+24 hours'</span>));
+
+    <span class="comment">// 4. Insert user with email_verified = 0, profile_completed = 0</span>
+    <span class="variable">$stmt</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"INSERT INTO users (email, password, email_verified, profile_completed, verification_token, token_expires_at) VALUES (?, ?, 0, 0, ?, ?)"</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">bind_param</span>(<span class="string">'ssss'</span>, <span class="variable">$email</span>, <span class="variable">$hashedPassword</span>, <span class="variable">$token</span>, <span class="variable">$tokenExpiry</span>);
+
+    <span class="keyword">if</span>(<span class="variable">$stmt</span>-&gt;<span class="function">execute</span>()) {
+        <span class="comment">// 5. Send verification email</span>
+        <span class="function">sendVerificationEmail</span>(<span class="variable">$email</span>, <span class="variable">$token</span>);
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">true</span>];
+    }
+
+    <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>, <span class="string">'error'</span> =&gt; <span class="string">'Registration failed'</span>];
+}</pre>
+
+        <div style="page-break-before: always;"></div>
+
+        <h3>Step 2: Email Verification</h3>
+
+        <h4>function.php - Send Email Function</h4>
+        <pre><span class="keyword">function</span> <span class="function">sendVerificationEmail</span>(<span class="variable">$email</span>, <span class="variable">$token</span>) {
+    <span class="variable">$verificationLink</span> = <span class="string">"http://yourdomain.com/verify.php?token="</span> . <span class="variable">$token</span>;
+
+    <span class="variable">$subject</span> = <span class="string">"Verify Your Email"</span>;
+    <span class="variable">$message</span> = <span class="string">"Click this link to verify: "</span> . <span class="variable">$verificationLink</span>;
+    <span class="variable">$headers</span> = <span class="string">"From: noreply@yourdomain.com"</span>;
+
+    <span class="function">mail</span>(<span class="variable">$email</span>, <span class="variable">$subject</span>, <span class="variable">$message</span>, <span class="variable">$headers</span>);
+}</pre>
+
+        <h4>verify.php - Email Verification Handler</h4>
+        <pre><span class="keyword">&lt;?php</span>
+<span class="keyword">require_once</span> <span class="string">'includes/config.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'includes/functions/auth.php'</span>;
+
+<span class="keyword">if</span>(<span class="function">isset</span>(<span class="variable">$_GET</span>[<span class="string">'token'</span>])) {
+    <span class="variable">$result</span> = <span class="function">verifyEmail</span>(<span class="variable">$_GET</span>[<span class="string">'token'</span>]);
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>[<span class="string">'success'</span>]) {
+        <span class="comment">// Show success message, redirect to login</span>
+        <span class="keyword">echo</span> <span class="string">"Email verified! You can now login."</span>;
+        <span class="function">header</span>(<span class="string">"refresh:3;url=index.php"</span>);
+    } <span class="keyword">else</span> {
+        <span class="keyword">echo</span> <span class="string">"Invalid or expired token"</span>;
+    }
+}
+<span class="keyword">?&gt;</span></pre>
+
+        <h4>auth.php - verifyEmail() Function</h4>
+        <pre><span class="keyword">function</span> <span class="function">verifyEmail</span>(<span class="variable">$token</span>) {
+    <span class="keyword">global</span> <span class="variable">$conn</span>;
+
+    <span class="comment">// Check if token exists and not expired</span>
+    <span class="variable">$stmt</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"SELECT id FROM users WHERE verification_token = ? AND token_expires_at &gt; NOW()"</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">bind_param</span>(<span class="string">'s'</span>, <span class="variable">$token</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">execute</span>();
+    <span class="variable">$result</span> = <span class="variable">$stmt</span>-&gt;<span class="function">get_result</span>();
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>-&gt;num_rows &gt; <span class="number">0</span>) {
+        <span class="variable">$user</span> = <span class="variable">$result</span>-&gt;<span class="function">fetch_assoc</span>();
+
+        <span class="comment">// Update email_verified to 1</span>
+        <span class="variable">$update</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"UPDATE users SET email_verified = 1, verification_token = NULL WHERE id = ?"</span>);
+        <span class="variable">$update</span>-&gt;<span class="function">bind_param</span>(<span class="string">'i'</span>, <span class="variable">$user</span>[<span class="string">'id'</span>]);
+        <span class="variable">$update</span>-&gt;<span class="function">execute</span>();
+
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">true</span>];
+    }
+
+    <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>];
+}</pre>
+
+        <div style="page-break-before: always;"></div>
+
+        <h3>Step 3: Login with Profile Check <span class="header-badge">THE KEY PART</span></h3>
+
+        <h4>index.php or login.php - Login Handler</h4>
+        <pre><span class="keyword">&lt;?php</span>
+<span class="function">session_start</span>();
+<span class="keyword">require_once</span> <span class="string">'includes/config.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'includes/functions/auth.php'</span>;
+
+<span class="keyword">if</span>(<span class="variable">$_SERVER</span>[<span class="string">'REQUEST_METHOD'</span>] == <span class="string">'POST'</span>) {
+    <span class="variable">$email</span> = <span class="variable">$_POST</span>[<span class="string">'email'</span>];
+    <span class="variable">$password</span> = <span class="variable">$_POST</span>[<span class="string">'password'</span>];
+
+    <span class="variable">$result</span> = <span class="function">loginUser</span>(<span class="variable">$email</span>, <span class="variable">$password</span>);
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>[<span class="string">'success'</span>]) {
+        <span class="variable">$_SESSION</span>[<span class="string">'userID'</span>] = <span class="variable">$result</span>[<span class="string">'userId'</span>];
+        <span class="variable">$_SESSION</span>[<span class="string">'email'</span>] = <span class="variable">$result</span>[<span class="string">'email'</span>];
+
+        <span class="comment">// THE KEY CHECK: Does user need to complete profile?</span>
+        <span class="keyword">if</span>(<span class="function">needsProfileCompletion</span>(<span class="variable">$result</span>[<span class="string">'userId'</span>])) {
+            <span class="comment">// Redirect to profile completion</span>
+            <span class="function">header</span>(<span class="string">"Location: completeProfile.php"</span>);
+            <span class="keyword">exit</span>;
+        } <span class="keyword">else</span> {
+            <span class="comment">// Normal login - go to homepage/booking</span>
+            <span class="function">header</span>(<span class="string">"Location: booking.php"</span>);
+            <span class="keyword">exit</span>;
+        }
+    } <span class="keyword">else</span> {
+        <span class="variable">$error</span> = <span class="variable">$result</span>[<span class="string">'error'</span>];
+    }
+}
+<span class="keyword">?&gt;</span></pre>
+
+        <h4>auth.php - loginUser() Function</h4>
+        <pre><span class="keyword">function</span> <span class="function">loginUser</span>(<span class="variable">$email</span>, <span class="variable">$password</span>) {
+    <span class="keyword">global</span> <span class="variable">$conn</span>;
+
+    <span class="comment">// 1. Get user by email</span>
+    <span class="variable">$stmt</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"SELECT id, email, password, email_verified, profile_completed FROM users WHERE email = ?"</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">bind_param</span>(<span class="string">'s'</span>, <span class="variable">$email</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">execute</span>();
+    <span class="variable">$result</span> = <span class="variable">$stmt</span>-&gt;<span class="function">get_result</span>();
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>-&gt;num_rows == <span class="number">0</span>) {
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>, <span class="string">'error'</span> =&gt; <span class="string">'Invalid credentials'</span>];
+    }
+
+    <span class="variable">$user</span> = <span class="variable">$result</span>-&gt;<span class="function">fetch_assoc</span>();
+
+    <span class="comment">// 2. Check if email is verified</span>
+    <span class="keyword">if</span>(<span class="variable">$user</span>[<span class="string">'email_verified'</span>] == <span class="number">0</span>) {
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>, <span class="string">'error'</span> =&gt; <span class="string">'Please verify your email first'</span>];
+    }
+
+    <span class="comment">// 3. Verify password</span>
+    <span class="keyword">if</span>(!<span class="function">password_verify</span>(<span class="variable">$password</span>, <span class="variable">$user</span>[<span class="string">'password'</span>])) {
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>, <span class="string">'error'</span> =&gt; <span class="string">'Invalid credentials'</span>];
+    }
+
+    <span class="comment">// 4. Login successful - return user data</span>
+    <span class="keyword">return</span> [
+        <span class="string">'success'</span> =&gt; <span class="keyword">true</span>,
+        <span class="string">'userId'</span> =&gt; <span class="variable">$user</span>[<span class="string">'id'</span>],
+        <span class="string">'email'</span> =&gt; <span class="variable">$user</span>[<span class="string">'email'</span>],
+        <span class="string">'profileCompleted'</span> =&gt; <span class="variable">$user</span>[<span class="string">'profile_completed'</span>]
+    ];
+}</pre>
+
+        <h4>auth.php - needsProfileCompletion() Function</h4>
+        <pre><span class="keyword">function</span> <span class="function">needsProfileCompletion</span>(<span class="variable">$userId</span>) {
+    <span class="keyword">global</span> <span class="variable">$conn</span>;
+
+    <span class="variable">$stmt</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"SELECT profile_completed FROM users WHERE id = ?"</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">bind_param</span>(<span class="string">'i'</span>, <span class="variable">$userId</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">execute</span>();
+    <span class="variable">$result</span> = <span class="variable">$stmt</span>-&gt;<span class="function">get_result</span>();
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>-&gt;num_rows &gt; <span class="number">0</span>) {
+        <span class="variable">$user</span> = <span class="variable">$result</span>-&gt;<span class="function">fetch_assoc</span>();
+        <span class="keyword">return</span> <span class="variable">$user</span>[<span class="string">'profile_completed'</span>] == <span class="number">0</span>; <span class="comment">// Returns true if NOT completed</span>
+    }
+
+    <span class="keyword">return</span> <span class="keyword">false</span>;
+}</pre>
+
+        <div style="page-break-before: always;"></div>
+
+        <h3>Step 4: Profile Completion Page</h3>
+
+        <h4>completeProfile.php - Profile Form</h4>
+        <pre><span class="keyword">&lt;?php</span>
+<span class="function">session_start</span>();
+<span class="keyword">require_once</span> <span class="string">'includes/config.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'includes/functions/function.php'</span>;
+
+<span class="comment">// Protect this page - must be logged in</span>
+<span class="keyword">if</span>(!<span class="function">isset</span>(<span class="variable">$_SESSION</span>[<span class="string">'userID'</span>])) {
+    <span class="function">header</span>(<span class="string">"Location: index.php"</span>);
+    <span class="keyword">exit</span>;
+}
+
+<span class="comment">// If already completed, redirect to booking</span>
+<span class="keyword">if</span>(!<span class="function">needsProfileCompletion</span>(<span class="variable">$_SESSION</span>[<span class="string">'userID'</span>])) {
+    <span class="function">header</span>(<span class="string">"Location: booking.php"</span>);
+    <span class="keyword">exit</span>;
+}
+
+<span class="keyword">if</span>(<span class="variable">$_SERVER</span>[<span class="string">'REQUEST_METHOD'</span>] == <span class="string">'POST'</span>) {
+    <span class="variable">$data</span> = [
+        <span class="string">'firstName'</span> =&gt; <span class="variable">$_POST</span>[<span class="string">'firstName'</span>],
+        <span class="string">'lastName'</span> =&gt; <span class="variable">$_POST</span>[<span class="string">'lastName'</span>],
+        <span class="string">'phone'</span> =&gt; <span class="variable">$_POST</span>[<span class="string">'phone'</span>],
+        <span class="string">'address'</span> =&gt; <span class="variable">$_POST</span>[<span class="string">'address'</span>]
+    ];
+
+    <span class="variable">$result</span> = <span class="function">saveUserProfile</span>(<span class="variable">$_SESSION</span>[<span class="string">'userID'</span>], <span class="variable">$data</span>);
+
+    <span class="keyword">if</span>(<span class="variable">$result</span>[<span class="string">'success'</span>]) {
+        <span class="comment">// Profile completed - redirect to booking</span>
+        <span class="function">header</span>(<span class="string">"Location: booking.php"</span>);
+        <span class="keyword">exit</span>;
+    }
+}
+<span class="keyword">?&gt;</span>
+
+<span class="comment">&lt;!-- HTML FORM HERE --&gt;</span>
+&lt;form method="POST"&gt;
+    &lt;input type="text" name="firstName" required&gt;
+    &lt;input type="text" name="lastName" required&gt;
+    &lt;input type="text" name="phone" required&gt;
+    &lt;textarea name="address" required&gt;&lt;/textarea&gt;
+    &lt;button type="submit"&gt;Complete Profile&lt;/button&gt;
+&lt;/form&gt;</pre>
+
+        <h4>function.php - saveUserProfile() Function</h4>
+        <pre><span class="keyword">function</span> <span class="function">saveUserProfile</span>(<span class="variable">$userId</span>, <span class="variable">$data</span>) {
+    <span class="keyword">global</span> <span class="variable">$conn</span>;
+
+    <span class="comment">// Update user profile AND set profile_completed = 1</span>
+    <span class="variable">$stmt</span> = <span class="variable">$conn</span>-&gt;<span class="function">prepare</span>(<span class="string">"UPDATE users SET firstName = ?, lastName = ?, phone = ?, address = ?, profile_completed = 1 WHERE id = ?"</span>);
+    <span class="variable">$stmt</span>-&gt;<span class="function">bind_param</span>(<span class="string">'ssssi'</span>,
+        <span class="variable">$data</span>[<span class="string">'firstName'</span>],
+        <span class="variable">$data</span>[<span class="string">'lastName'</span>],
+        <span class="variable">$data</span>[<span class="string">'phone'</span>],
+        <span class="variable">$data</span>[<span class="string">'address'</span>],
+        <span class="variable">$userId</span>
+    );
+
+    <span class="keyword">if</span>(<span class="variable">$stmt</span>-&gt;<span class="function">execute</span>()) {
+        <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">true</span>];
+    }
+
+    <span class="keyword">return</span> [<span class="string">'success'</span> =&gt; <span class="keyword">false</span>];
+}</pre>
+
+        <div style="page-break-before: always;"></div>
+
+        <h3>Step 5: Protect All Other Pages</h3>
+        <p>Add this code to <strong>booking.php</strong>, <strong>admin.php</strong>, and any other protected pages:</p>
+
+        <pre><span class="keyword">&lt;?php</span>
+<span class="function">session_start</span>();
+<span class="keyword">require_once</span> <span class="string">'includes/config.php'</span>;
+<span class="keyword">require_once</span> <span class="string">'includes/functions/auth.php'</span>;
+
+<span class="comment">// Must be logged in</span>
+<span class="keyword">if</span>(!<span class="function">isset</span>(<span class="variable">$_SESSION</span>[<span class="string">'userID'</span>])) {
+    <span class="function">header</span>(<span class="string">"Location: index.php"</span>);
+    <span class="keyword">exit</span>;
+}
+
+<span class="comment">// Must have completed profile</span>
+<span class="keyword">if</span>(<span class="function">needsProfileCompletion</span>(<span class="variable">$_SESSION</span>[<span class="string">'userID'</span>])) {
+    <span class="function">header</span>(<span class="string">"Location: completeProfile.php"</span>);
+    <span class="keyword">exit</span>;
+}
+
+<span class="comment">// Now show the page content...</span>
+<span class="keyword">?&gt;</span></pre>
+
+        <div style="page-break-before: always;"></div>
+
+        <h2><span class="emoji">🔄</span> How It Solves Your Problem</h2>
+
+        <div class="scenario">
+            <h4>Scenario: User starts filling out profile but closes browser</h4>
+            <ol>
+                <li>User registers → <code>email_verified = 0, profile_completed = 0</code></li>
+                <li>User verifies email → <code>email_verified = 1, profile_completed = 0</code></li>
+                <li>User logs in first time → redirected to <code>completeProfile.php</code></li>
+                <li>User fills form but <strong>closes browser before submitting</strong> → <code>profile_completed = 0</code> (still)</li>
+                <li>User logs in again later → <strong>System checks</strong>: <code>profile_completed == 0</code> → Redirected to <code>completeProfile.php</code> again</li>
+                <li>User completes and submits → <code>profile_completed = 1</code></li>
+                <li>Future logins → Goes directly to <code>booking.php</code></li>
+            </ol>
+        </div>
+
+        <div class="success">
+            <strong>Key Takeaway:</strong> The database flags (<code>email_verified</code>, <code>profile_completed</code>)
+            persist across sessions. No matter how many times the user closes the browser or navigates away,
+            the system will always check these flags on login and redirect accordingly.
+        </div>
+
+        <h2><span class="emoji">📁</span> Final File Structure</h2>
+
+        <div class="file-structure">
+            <ul>
+                <li>src/
+                    <ul>
+                        <li>includes/
+                            <ul>
+                                <li class="file">config.php <span style="color: #666;">(database connection)</span></li>
+                                <li>functions/
+                                    <ul>
+                                        <li class="file">auth.php <span style="color: #666;">(registerUser, loginUser, verifyEmail, needsProfileCompletion)</span></li>
+                                        <li class="file">function.php <span style="color: #666;">(saveUserProfile, getPackageDetails, sendVerificationEmail)</span></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="file">register.php <span style="color: #666;">(registration form)</span></li>
+                        <li class="file">verify.php <span style="color: #666;">(email verification handler)</span></li>
+                        <li class="file">index.php <span style="color: #666;">(login form)</span></li>
+                        <li class="file">completeProfile.php <span style="color: #666;">(profile completion form)</span></li>
+                        <li class="file">booking.php <span style="color: #666;">(protected page)</span></li>
+                        <li class="file">admin.php <span style="color: #666;">(protected page)</span></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <h2><span class="emoji">✅</span> Summary</h2>
+
+        <div class="info">
+            <p>
+                The key to this implementation is using <strong>database flags</strong>
+                (<code>email_verified</code>, <code>profile_completed</code>) and
+                <strong>checking them on every login</strong>. The system always knows the user's state
+                and redirects accordingly, no matter how many times they close the browser or navigate away.
+            </p>
+        </div>
+
+        <h3>What Makes This Work:</h3>
+        <ul>
+            <li><strong>Persistent State:</strong> Database flags survive browser closures and session timeouts</li>
+            <li><strong>Login-Time Checks:</strong> Every login verifies both email verification and profile completion</li>
+            <li><strong>Automated Redirects:</strong> Users are automatically sent to the appropriate page based on their state</li>
+            <li><strong>Page Protection:</strong> All protected pages check for complete profiles before displaying content</li>
+        </ul>
+
+        <h3>Benefits:</h3>
+        <ul>
+            <li>Users cannot bypass profile completion</li>
+            <li>No manual tracking required</li>
+            <li>Works across multiple devices and sessions</li>
+            <li>Clean separation of authentication and business logic</li>
+            <li>Easy to maintain and extend</li>
+        </ul>
+
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 2px solid #ddd; color: #666; text-align: center;">
+            <p>Generated on <?php echo date('F j, Y'); ?></p>
+            <p style="font-size: 0.9em;">User Authentication & Profile Completion Implementation Guide</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-generate PDF print dialog on load (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

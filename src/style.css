@@ -826,7 +826,7 @@ fieldset #legend {
   gap: 1rem;
 }
 
-.form-check-input,
-.form-check-label{
+.checkInput,
+.checkInputLabel{
   font-size: 1.3rem !important;
 }

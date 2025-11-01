@@ -249,6 +249,8 @@ function displayAddOns(data){
 
                     checkInput.classList.add('form-check-input');
                     labelCheck.classList.add('form-check-label');
+                    checkInput.classList.add('checkInput');
+                    labelCheck.classList.add('checkInputLabel');
                     labelCheck.classList.add('serif');
                     checkInput.classList.add('me-2');
                     formCheckDiv.classList.add('d-flex');

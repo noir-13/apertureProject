@@ -173,7 +173,10 @@ if (isset($_GET['packageId'])) {
                                 <?php endforeach; ?>
                             </div>
 
-                            <div class="mt-4 addons border rounded p-2"></div>
+                            <p class="mt-4 ">Addons: </p>
+                            <div class="addons border rounded p-2">
+                                <p>Please select a package to view addons...</p>
+                            </div>
                         </fieldset>
 
                         <!------------------------------------- Service Selectionn ------------------------------------>

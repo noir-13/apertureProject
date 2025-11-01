@@ -1,5 +1,6 @@
 <?php
 require_once './includes/config.php';
+require_once './includes/functions/auth.php';
 session_start();
 
 if(isset($_SESSION["userId"]) and $_SESSION["role"] === "Admin"){
@@ -25,38 +26,17 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
         $errors['logIn'] = "Password is required";
     }
 
-    if (empty($errors)) {
-        $query = $conn->prepare("SELECT userID, FirstName, LastName, FullName, Email, Password, Role from users WHERE email = ?");
-        $query->bind_param("s", $email);
-        $query->execute();
-        $result = $query->get_result();
+    $result = logInUser($email, $password);
 
-        if ($result->num_rows === 1 || password_verify($password, "PASSWORD121DHHASKDJABDAJUJDWBUAWBDAMBDMA")) {
-            $user = $result->fetch_assoc();
-
-            if (password_verify($password, $user['Password'])) {
-
-                $_SESSION['userId'] = $user['userID'];
-                $_SESSION['firstName'] = $user['FirstName'];
-                $_SESSION['lastName'] = $user['LastName'];
-                $_SESSION['fullName'] = $user['FullName'];
-                $_SESSION['email'] = $user['Email'];
-                $_SESSION['role'] = $user['Role'];
-
-                if ($user['Role'] === 'Admin') {
+   if($result['success']){
+     if ($user['Role'] === 'Admin') {
                     header("Location: admin.php");
                 } else {
                     header("Location:booking.php");
                 }
-            }
-
-            $errors['logIn'] = "Invalid email or password";
-        }else{
-    $errors['logIn'] = "Invalid email or password";
-        }
-    }
-
-    $query->close();
+   }else{
+    $errors['logIn'] = $result['error'];
+   }
 }
 
 
@@ -127,8 +107,8 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
 
                         <div class="mb-2 d-flex justify-content-between align-items-center">
                             <div class="form-check">
-                                <input type="checkbox" name="remember" id="remember" class="form-check-input">
-                                <label for="remember" class="form-check-label">Remember me</label>
+                                <input type="checkbox" name="remember"  class="form-check-input" id="remember">
+                                <label for="remember"  class="form-check-label rememberLabel" id="rememberLabel">Remember me</label>
                             </div>
 
                             <a href="forgot1.php">Forgot Password?</a>

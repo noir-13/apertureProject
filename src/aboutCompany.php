@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\Exception;
 
 require '../vendor/autoload.php';
 
+
 $error = '';
 $success = '';
 
@@ -18,12 +19,12 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
   try {
     $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
+    $mail->Host = $_ENV['SMTP_HOST'];
     $mail->SMTPAuth = true;
-    $mail->Username = 'aperture.eventbookings@gmail.com';
-    $mail->Password = 'pulj cvvo hepm zeob';
-    $mail->SMTPSecure = 'tls';
-    $mail->Port = 587;
+    $mail->Username = $_ENV['SMTP_USERNAME'];
+    $mail->Password = $_ENV['SMTP_PASSWORD'];
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;;
+    $mail->Port = $_ENV['SMTP_PORT'];
 
     $mail->setFrom($email, $fullName);
     $mail->addAddress('aperture.eventbookings@gmail.com');

@@ -1,5 +1,7 @@
 <?php
 require_once './includes/config.php';
+require_once './includes/functions/auth.php';
+require_once './includes/functions/function.php';
 session_start();
 
 if (isset($_SESSION["userId"]) and $_SESSION["role"] === "Admin") {
@@ -11,74 +13,118 @@ if (isset($_SESSION["userId"]) and $_SESSION["role"] === "Admin") {
 $errors = [];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $firstName = $_POST['fname'];
-    $lastName = $_POST['lname'];
-    $fullName = $_POST['fname'] . " " . $_POST['lname'];
+
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirmPassword'];
-    $role = $_POST['role'] ?? 'User';
-
-    if (empty($firstName)) {
-        $errors['fname'] = "First name is required";
-    }
-
-    if (empty($lastName)) {
-        $errors['lname'] = "Last name is required";
-    }
 
     if (empty($email)) {
         $errors['email'] = "Email is required";
+    } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] = "Please use a valid email";
     }
 
     if (empty($password)) {
         $errors['password'] = "Password is required";
+    } else if (strlen($password) < 8) {
+        $errors['password'] = "The password must be at least 8 characters";
     }
 
-    if (empty($confirmPassword)) {
-        $errors['ConfirmPassword'] = "Please confirm your password";
+    if ($password != $confirmPassword) {
+        $errors['ConfirmPassword'] = "Password Mismatched";
     }
 
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors['email'] = "Please input a valid email";
+    $checkEmail = isEmailExists($email);
+
+    if (!$checkEmail['success']) {
+        $errors['email'] = $checkEmail['error'];
     } else {
-        $query = $conn->prepare("SELECT userID from users WHERE Email = ?");
-        $query->bind_param("s", $email);
-        $query->execute();
-        $query->store_result();
+        if (empty($errors)) {
 
-        if ($query->num_rows !== 0) {
-            $errors['email'] = "Email is already registered";
-        }
+            $result = registerUser($email, $password);
 
-        $query->close();
-    }
-
-    if ($password !== $confirmPassword) {
-        $errors['ConfirmPassword'] = "Password do not matched";
-    }
-
-    if (empty($errors)) {
-
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        $query = $conn->prepare("INSERT into users(FirstName, LastName, FullName, Email, Password, Role) values (?,?,?,?,?,?)");
-        $query->bind_param("ssssss", $firstName, $lastName, $fullName, $email, $hashedPassword, $role);
-
-        if ($query->execute()) {
-            $query->close();
-            echo "<script>
-                        alert('Account successfully created');
-                        window.location = 'logIn.php';
-                  </script>";
-            exit;
-        } else {
-            echo "<script>alert('Something went wrong');</script>";
-            $query->close();
-            exit;
+            if ($result['success']) {
+                $_SESSION['registration_success'] = true;
+                header("Location: register.php");
+                exit;
+            } else {
+                $errors['email'] = $result['error'];
+            }
         }
     }
 }
+
+// $errors = [];
+
+// if ($_SERVER["REQUEST_METHOD"] === "POST") {
+//     $firstName = $_POST['fname'];
+//     $lastName = $_POST['lname'];
+//     $fullName = $_POST['fname'] . " " . $_POST['lname'];
+//     $email = trim($_POST['email']);
+//     $password = $_POST['password'];
+//     $confirmPassword = $_POST['confirmPassword'];
+//     $role = $_POST['role'] ?? 'User';
+
+//     if (empty($firstName)) {
+//         $errors['fname'] = "First name is required";
+//     }
+
+//     if (empty($lastName)) {
+//         $errors['lname'] = "Last name is required";
+//     }
+
+//     if (empty($email)) {
+//         $errors['email'] = "Email is required";
+//     }
+
+//     if (empty($password)) {
+//         $errors['password'] = "Password is required";
+//     }
+
+//     if (empty($confirmPassword)) {
+//         $errors['ConfirmPassword'] = "Please confirm your password";
+//     }
+
+//     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+//         $errors['email'] = "Please input a valid email";
+//     } else {
+//         $query = $conn->prepare("SELECT userID from users WHERE Email = ?");
+//         $query->bind_param("s", $email);
+//         $query->execute();
+//         $query->store_result();
+
+//         if ($query->num_rows !== 0) {
+//             $errors['email'] = "Email is already registered";
+//         }
+
+//         $query->close();
+//     }
+
+//     if ($password !== $confirmPassword) {
+//         $errors['ConfirmPassword'] = "Password do not matched";
+//     }
+
+//     if (empty($errors)) {
+
+//         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+//         $query = $conn->prepare("INSERT into users(FirstName, LastName, FullName, Email, Password, Role) values (?,?,?,?,?,?)");
+//         $query->bind_param("ssssss", $firstName, $lastName, $fullName, $email, $hashedPassword, $role);
+
+//         if ($query->execute()) {
+//             $query->close();
+//             echo "<script>
+//                         alert('Account successfully created');
+//                         window.location = 'logIn.php';
+//                   </script>";
+//             exit;
+//         } else {
+//             echo "<script>alert('Something went wrong');</script>";
+//             $query->close();
+//             exit;
+//         }
+//     }
+// }
 
 ?>
 
@@ -92,6 +138,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap-5.3.8-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="../bootstrap-5.3.8-dist/sweetalert2.min.css">
     <title>Sign up - Aperture</title>
 </head>
 
@@ -101,42 +149,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 
 
-    <section class="w-100 min-vh-100  p-0 p-sm-2  d-flex justify-content-center align-items-center" id="reg">
+    <section class="w-100 min-vh-100  p-0 p-sm-2  d-flex justify-content-center align-items-center position-relative" id="reg">
+
+        <a href="index.php"><img src="./assets/logo.png" alt="" id="logo"></a>
+
 
         <div class="container justify-content-center px-4 p-md-3">
-            <div class="row justify-content-center align-items-center bg-white shadow p-3 rounded-5  ">
+            <div class="row justify-content-center align-items-center bg-white shadow p-0 p-md-3 rounded-5  ">
 
-                <div class="col position-relative">
-                    <a href="index.php" class="btn" id="back">
-                        <img src="./assets/dropdown.png" class="img-fluid" alt="Back to home">
-                        <small>Back to Home</small>
-                    </a>
-
-                    <form action="" method="POST" class="p-4">
+                <div class="col ">
+                    <form action="" method="POST" class="p-2">
 
                         <div class="text-center mb-3">
                             <h1 class=" display-1 m-0 serif">Sign up</h1>
                             <small>Join Aperture today and enjoy seamless booking, transparent pricing, and trusted pros at your fingertips.</small>
                         </div>
 
-                        <!-- First and Last Name  -->
 
-                        <div class="mb-2 d-flex gap-2 flex-column flex-md-row ">
-                            <div class="w-100">
-                                <label for="fname" class="form-label">First name<span class="text-danger">*</span></label>
-                                <input type="text" name="fname" id="fname" class="form-control <?php echo (!isset($errors['fname']) ? '' : 'is-invalid')  ?> " placeholder="e.g., Prince Andrew" required>
-                            </div>
-                            <div class="w-100">
-                                <label for="lname" class="form-label">Last name<span class="text-danger">*</span></label>
-                                <input type="text" name="lname" id="lname" class="form-control <?php echo (!isset($errors['lname']) ? '' : 'is-invalid')  ?> " placeholder="e.g., Casiano" required>
-                            </div>
-                        </div>
 
                         <!-- Email  -->
 
                         <div class="mb-2">
                             <label class="form-label" for="email">Email<span class="text-danger">*</span></label>
-                            <input type="email" name="email" id="email" class="form-control <?php echo (!isset($errors['email']) ? '' : 'is-invalid')  ?> " placeholder="e.g., princesuperpogi@email.com" required>
+                            <input type="email" name="email" id="email" value="<?php echo (isset($errors['email']) ? $email : (isset($errors['password']) ? $email : (isset($errors['ConfirmPassword']) ? $email : ''))) ?>" class="form-control <?php echo (!isset($errors['email']) ? '' : 'is-invalid')  ?> " required>
                             <?php if (isset($errors['email'])): ?>
                                 <p class="text-danger"><?php echo $errors['email'] ?></p>
                             <?php endif ?>
@@ -146,14 +181,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <div class="mb-2">
                             <label class="form-label" for="password">Password<span class="text-danger">*</span></label>
-                            <input type="password" name="password" id="password" class="form-control <?php echo (!isset($errors['password']) ? '' : 'is-invalid')  ?> " required placeholder="Password must be at least 8 characters">
+                            <input type="password" name="password" id="password" value="<?php echo (isset($errors['password']) ? $password : (isset($errors['ConfirmPassword']) ? $password : '')) ?>" class="form-control <?php echo (isset($errors['password'])  ? 'is-invalid' : '')   ?> " required>
+                            <?php if (isset($errors['password'])): ?>
+                                <p class="text-danger"><?php echo $errors['password'] ?></p>
+                            <?php endif ?>
                         </div>
 
                         <!-- Confirm Password -->
 
-                        <div class="mb-2">
+                        <div class="mb-3">
                             <label class="form-label" for="confirmPassword">Confirm Password<span class="text-danger">*</span></label>
-                            <input type="password" name="confirmPassword" id="confirmPassword" class="form-control <?php echo (!isset($errors['ConfirmPassword']) ? '' : 'is-invalid')  ?> " required placeholder="Password must be at least 8 characters">
+                            <input type="password" name="confirmPassword" id="confirmPassword" class="form-control <?php echo (!isset($errors['ConfirmPassword']) ? '' : 'is-invalid')  ?> " required>
                             <?php if (isset($errors['ConfirmPassword'])): ?>
                                 <p class="text-danger"><?php echo $errors['ConfirmPassword'] ?></p>
                             <?php endif ?>
@@ -161,12 +199,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <!-- Check Terms and Condition -->
 
-                        <div class="form-check mb-2">
+                        <div class="form-check mb-2 d-flex gap-2 justify-content-center align-items-start">
                             <input type="checkbox" name="termsCheck" id="termsCheck" class="form-check-input" required>
-                            <label for="termsCheck" class="form-check-label"><small>By creating an account, you confirm that you have read, understood, and agreed to the <a href="#" type="button" data-bs-toggle="modal" data-bs-target="#dataModal">Terms and Conditions and Privacy Notice.</a></small></label>
+                            <label for="termsCheck" id="termsLabel" class="form-check-label">By creating an account, you confirm that you have read, understood, and agreed to the <a href="#" type="button" data-bs-toggle="modal" data-bs-target="#dataModal">Terms and Conditions and Privacy Notice.</a></label>
                         </div>
 
-                        <?php include "./includes/modals/terms.php"?>
+                        <?php include "./includes/modals/terms.php" ?>
 
                         <!-- Submit Button -->
                         <div class="mt-3">
@@ -179,7 +217,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </div>
 
                 <div class="col d-none d-lg-inline p-4 rounded-4 bg-secondary overflow-hidden">
-                    <img src="./assets/undraw_access-account_aydp (1).svg" class="img-fluid object-fit-cover" alt="">
+                    <img src="./assets/undraw_fingerprint-login_19qv.svg" class="img-fluid object-fit-cover" alt="">
                 </div>
             </div>
         </div>
@@ -189,8 +227,30 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <!-- <?php include './includes/footer.php'; ?> -->
 
+    <!-- SweetAlert2 JS -->
+    <script src="../bootstrap-5.3.8-dist/sweetalert2.min.js"></script>
     <script src="../bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
+
+    <?php if (isset($_SESSION['registration_success']) && $_SESSION['registration_success']): ?>
+    <script>
+        Swal.fire({
+            icon: 'success',
+            title: 'Registration Successful!',
+            html: '<p>A verification link has been sent to your email.</p><p class="text-muted">Please check your inbox and click the link to verify your account.</p>',
+            confirmButtonText: 'Continue',
+            confirmButtonColor: '#212529',
+            allowOutsideClick: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = 'register.php';
+            }
+        });
+    </script>
+    <?php
+        unset($_SESSION['registration_success']);
+    endif;
+    ?>
 </body>
 
 </html>

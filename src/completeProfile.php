@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap-5.3.8-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
-    <title>Sign up - Aperture</title>
+    <title>Complete your profile - Aperture</title>
 </head>
 
 <body>
@@ -21,15 +21,12 @@
             <div class="row justify-content-center align-items-center bg-white shadow p-3 rounded-5  ">
 
                 <div class="col position-relative">
-                    <a href="index.php" class="btn" id="back">
-                        <img src="./assets/dropdown.png" class="img-fluid" alt="Back to home">
-                        <small>Back to Home</small>
-                    </a>
+                   
 
                     <form action="" method="POST" class="p-4">
 
                         <div class="text-center mb-3">
-                            <h1 class=" display-1 m-0 serif">Sign up</h1>
+                            <h1 class=" display-5 m-0 serif">Complete your profile</h1>
                             <small>Join Aperture today and enjoy seamless booking, transparent pricing, and trusted pros at your fingertips.</small>
                         </div>
 
@@ -46,11 +43,11 @@
                             </div>
                         </div>
 
-                        <!-- Email  -->
+                        <!-- Phone  -->
 
                         <div class="mb-2">
-                            <label class="form-label" for="email">Email<span class="text-danger">*</span></label>
-                            <input type="email" name="email" id="email" class="form-control <?php echo (!isset($errors['email']) ? '' : 'is-invalid')  ?> " placeholder="e.g., princesuperpogi@email.com" required>
+                            <label class="form-label" for="email">Contact No.<span class="text-danger">*</span></label>
+                            <input type="text" name="email" id="email" class="form-control <?php echo (!isset($errors['email']) ? '' : 'is-invalid')  ?> " placeholder="e.g., 09827386287" required>
                             <?php if (isset($errors['email'])): ?>
                                 <p class="text-danger"><?php echo $errors['email'] ?></p>
                             <?php endif ?>
@@ -58,42 +55,26 @@
 
                         <!-- Password -->
 
-                        <div class="mb-2">
-                            <label class="form-label" for="password">Password<span class="text-danger">*</span></label>
-                            <input type="password" name="password" id="password" class="form-control <?php echo (!isset($errors['password']) ? '' : 'is-invalid')  ?> " required placeholder="Password must be at least 8 characters">
-                        </div>
-
-                        <!-- Confirm Password -->
-
-                        <div class="mb-2">
-                            <label class="form-label" for="confirmPassword">Confirm Password<span class="text-danger">*</span></label>
-                            <input type="password" name="confirmPassword" id="confirmPassword" class="form-control <?php echo (!isset($errors['ConfirmPassword']) ? '' : 'is-invalid')  ?> " required placeholder="Password must be at least 8 characters">
-                            <?php if (isset($errors['ConfirmPassword'])): ?>
-                                <p class="text-danger"><?php echo $errors['ConfirmPassword'] ?></p>
-                            <?php endif ?>
-                        </div>
+                      
 
                         <!-- Check Terms and Condition -->
 
-                        <div class="form-check mb-2">
+                        <div class="form-check mb-3">
                             <input type="checkbox" name="termsCheck" id="termsCheck" class="form-check-input" required>
-                            <label for="termsCheck" class="form-check-label"><small>By creating an account, you confirm that you have read, understood, and agreed to the <a href="#" type="button" data-bs-toggle="modal" data-bs-target="#dataModal">Terms and Conditions and Privacy Notice.</a></small></label>
+                            <label for="termsCheck" id="termsLabel" class="form-check-label"><small>By creating an account, you confirm that you have read, understood, and agreed to the <a href="#" type="button" data-bs-toggle="modal" data-bs-target="#dataModal">Terms and Conditions and Privacy Notice.</a></small></label>
                         </div>
 
                         <?php include "./includes/modals/terms.php"?>
 
-                        <!-- Submit Button -->
-                        <div class="mt-3">
-                            <input type="submit" class="btn w-100 bg-dark text-light mb-1" value="Sign up">
-                            <p>Already have an account? <a href="logIn.php">Log in</a></p>
-                        </div>
-
+                     
+                            <input type="submit" class="btn w-100 bg-dark text-light mb-1" value="Complete Profile">
+                            
 
                     </form>
                 </div>
 
                 <div class="col d-none d-lg-inline p-4 rounded-4 bg-secondary overflow-hidden">
-                    <img src="./assets/undraw_access-account_aydp (1).svg" class="img-fluid object-fit-cover" alt="">
+                    <img src="./assets/undraw_complete-form_aarh.svg" class="img-fluid object-fit-cover" alt="">
                 </div>
             </div>
         </div>
