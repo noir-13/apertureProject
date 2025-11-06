@@ -257,7 +257,7 @@ function displayAddOns(data){
                     formCheckDiv.classList.add('align-items-start');
                     formCheckDiv.classList.add('justify-content-center');
                  
-                    
+    
                     formCheckDiv.appendChild(checkInput);
                     formCheckDiv.appendChild(labelCheck);
 

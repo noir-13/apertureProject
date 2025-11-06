@@ -1,10 +1,9 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['userId'])) {
-    header('Location: index.php');
+if (!isset($_SESSION['userId']) or !isset($_SESSION['isVerified']) or $_SESSION['isVerified'] === 0) {
+   header("Location: login.php");
 }
-
 require_once './includes/config.php';
 require_once './includes/functions/function.php';
 

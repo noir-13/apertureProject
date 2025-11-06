@@ -4,20 +4,25 @@ require_once './includes/functions/auth.php';
 require_once './includes/functions/function.php';
 session_start();
 
-if (isset($_SESSION["userId"]) and $_SESSION["role"] === "Admin") {
+if(isset($_SESSION["userId"]) and isset($_SESSION["role"]) and  $_SESSION["role"] === "Admin" and isset($_SESSION["isVerified"]) and  $_SESSION["isVerified"]){
     header("Location: admin.php");
-} else if (isset($_SESSION["userId"]) and $_SESSION["role"] === "User") {
+    exit;
+}else if (isset($_SESSION["userId"]) and isset($_SESSION["role"]) and $_SESSION["role"] === "User" and isset($_SESSION["isVerified"]) and  $_SESSION["isVerified"]){
     header("Location: booking.php");
+    exit;
 }
+
 
 $errors = [];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
+    // Getting the user input
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     $confirmPassword = $_POST['confirmPassword'];
 
+    //checking if there's an error in the password and email
     if (empty($email)) {
         $errors['email'] = "Email is required";
     } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -30,10 +35,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors['password'] = "The password must be at least 8 characters";
     }
 
-    if ($password != $confirmPassword) {
+    if ($password !== $confirmPassword) {
         $errors['ConfirmPassword'] = "Password Mismatched";
     }
 
+    //checking if there is an existing email/account
     $checkEmail = isEmailExists($email);
 
     if (!$checkEmail['success']) {
@@ -41,6 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } else {
         if (empty($errors)) {
 
+            // registering the user
             $result = registerUser($email, $password);
 
             if ($result['success']) {
@@ -181,7 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                         <div class="mb-2">
                             <label class="form-label" for="password">Password<span class="text-danger">*</span></label>
-                            <input type="password" name="password" id="password" value="<?php echo (isset($errors['password']) ? $password : (isset($errors['ConfirmPassword']) ? $password : '')) ?>" class="form-control <?php echo (isset($errors['password'])  ? 'is-invalid' : '')   ?> " required>
+                            <input type="password" name="password" id="password"  class="form-control <?php echo (isset($errors['password'])  ? 'is-invalid' : '')   ?> " required>
                             <?php if (isset($errors['password'])): ?>
                                 <p class="text-danger"><?php echo $errors['password'] ?></p>
                             <?php endif ?>

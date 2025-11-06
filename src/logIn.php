@@ -1,21 +1,27 @@
 <?php
 require_once './includes/config.php';
 require_once './includes/functions/auth.php';
+require_once './includes/functions/function.php';
 session_start();
 
-if(isset($_SESSION["userId"]) and $_SESSION["role"] === "Admin"){
+if (isset($_SESSION["userId"]) and isset($_SESSION["role"]) and  $_SESSION["role"] === "Admin" and isset($_SESSION["isVerified"]) and  $_SESSION["isVerified"]) {
     header("Location: admin.php");
-}else if (isset($_SESSION["userId"]) and $_SESSION["role"] === "User"){
+    exit;
+} else if (isset($_SESSION["userId"]) and isset($_SESSION["role"]) and $_SESSION["role"] === "User" and isset($_SESSION["isVerified"]) and  $_SESSION["isVerified"]) {
     header("Location: booking.php");
+    exit;
 }
 
 
 $errors = [];
 
 if ($_SERVER["REQUEST_METHOD"] === 'POST') {
+
+    // Getting the user input
     $email = trim($_POST['email']);
     $password = $_POST['password'];
 
+    //checking if there's an error in the password and email
     if (empty($email)) {
         $errors['logIn'] = "Email is required";
     } else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -26,17 +32,39 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
         $errors['logIn'] = "Password is required";
     }
 
-    $result = logInUser($email, $password);
+    //loggin in the user
+    if (empty($errors)) {
+        $result = logInUser($email, $password);
 
-   if($result['success']){
-     if ($user['Role'] === 'Admin') {
+        if ($result['success']) {
+            $isEmailVerified = isVerified($email);
+
+            if ($isEmailVerified) {
+                setSession($result['userId']);
+
+                if ($result['role'] === 'Admin') {
                     header("Location: admin.php");
+                    exit;
                 } else {
                     header("Location:booking.php");
+                    exit;
                 }
-   }else{
-    $errors['logIn'] = $result['error'];
-   }
+            } else {
+                $token = createToken($email);
+                $emailSent = sendVerificationEmail($email, $token);
+
+                if ($emailSent) {
+                    $_SESSION['login_success'] = true;
+                    header("Location: logIn.php");
+                    exit;
+                } else {
+                    $errors['logIn'] = 'Something went wrong';
+                }
+            }
+        } else {
+            $errors['logIn'] = $result['error'];
+        }
+    }
 }
 
 
@@ -50,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="../bootstrap-5.3.8-dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../bootstrap-5.3.8-dist/sweetalert2.min.css">
     <link rel="icon" href="./assets/camera.png" type="image/x-icon">
     <title>Login - Aperture</title>
 </head>
@@ -64,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
 
     <section class="w-100 min-vh-100  p-0 p-sm-2  d-flex justify-content-center align-items-center position-relative" id="logSection">
 
-    <a href="index.php"><img src="./assets/logo.png" alt="" id="logo"></a>
+        <a href="index.php"><img src="./assets/logo.png" alt="" id="logo"></a>
 
         <div class="container justify-content-center px-4 p-md-3">
             <div class="row justify-content-center align-items-center bg-white shadow p-3 rounded-5">
@@ -76,17 +105,17 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
 
                 <div class="col">
                     <form action="" method="POST" class="p-4">
-                         <div class="text-center mb-3">
+                        <div class="text-center mb-3">
                             <h1 class=" display-3 m-0 serif">Log in</h1>
                             <p>Please enter your registered email address and password to securely access your Aperture account.</p>
-                        </div>     
-                        
-                        
+                        </div>
+
+
                         <!-- Email  -->
 
                         <div class="mb-2">
                             <label class="form-label" for="email">Email</label>
-                            <input type="email" name="email" id="email" class="form-control"  value="<?php echo(htmlspecialchars($email ?? '')) ?>" required>
+                            <input type="email" name="email" id="email" class="form-control" value="<?php echo (htmlspecialchars($email ?? '')) ?>" required>
                         </div>
 
                         <!-- Password -->
@@ -97,31 +126,31 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
                             
                             <?php echo (!isset($errors['logIn']) ? '' : 'is-invalid')  ?>
 
-                            "   value="<?php echo(htmlspecialchars($password ?? '')) ?>" required>
-                            <?php if(isset($errors['logIn'])):?>
-                                <small class="text-danger"><?php echo $errors['logIn']?></small>
-                            <?php endif?>
+                            " value="" required>
+                            <?php if (isset($errors['logIn'])): ?>
+                                <small class="text-danger"><?php echo $errors['logIn'] ?></small>
+                            <?php endif ?>
                         </div>
 
                         <!-- Remember me and Forgot Password -->
 
                         <div class="mb-2 d-flex justify-content-between align-items-center">
                             <div class="form-check">
-                                <input type="checkbox" name="remember"  class="form-check-input" id="remember">
-                                <label for="remember"  class="form-check-label rememberLabel" id="rememberLabel">Remember me</label>
+                                <input type="checkbox" name="remember" class="form-check-input" id="remember">
+                                <label for="remember" class="form-check-label rememberLabel" id="rememberLabel">Remember me</label>
                             </div>
 
                             <a href="forgot1.php">Forgot Password?</a>
                         </div>
 
-                       
-                        <!-- Submit Button -->
-                            <div class="mt-3">
-                                <input type="submit" class="btn w-100 bg-dark text-light mb-1" value="Log in">
-                                <p>Don't have an account? <a href="register.php">Sign up</a></p>
-                            </div>
 
-                            
+                        <!-- Submit Button -->
+                        <div class="mt-3">
+                            <input type="submit" class="btn w-100 bg-dark text-light mb-1" value="Log in">
+                            <p>Don't have an account? <a href="register.php">Sign up</a></p>
+                        </div>
+
+
 
 
                     </form>
@@ -132,12 +161,32 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
     </section>
 
 
-    
+
 
     <!-- <?php include './includes/footer.php'; ?> -->
 
+    <script src="../bootstrap-5.3.8-dist/sweetalert2.min.js"></script>
     <script src="../bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
+    <?php if (isset($_SESSION['login_success']) && $_SESSION['login_success']): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'Please Verify your email',
+                html: '<p>A verification link has been sent to your email.</p><p class="text-muted">Please check your inbox and click the link to verify your account.</p>',
+                confirmButtonText: 'Continue',
+                confirmButtonColor: '#212529',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'login.php';
+                }
+            });
+        </script>
+    <?php
+        unset($_SESSION['login_success']);
+    endif;
+    ?>
 </body>
 
 </html>
@@ -145,7 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
 
 
 
-    <!-- <section class="w-100 min-vh-100 py-5 px-2 d-flex justify-content-center align-items-center" id="logSection">
+<!-- <section class="w-100 min-vh-100 py-5 px-2 d-flex justify-content-center align-items-center" id="logSection">
 
         <div class="container justify-content-center shadow rounded bg-light  p-2 p-md-3 p-lg-5 ">
             <div class="row justify-content-center align-items-center">
