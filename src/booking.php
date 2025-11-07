@@ -3,9 +3,18 @@ session_start();
 
 if (!isset($_SESSION['userId']) or !isset($_SESSION['isVerified']) or $_SESSION['isVerified'] === 0) {
    header("Location: login.php");
+   exit;
+} if(isset($_SESSION['profileCompleted']) and $_SESSION['profileCompleted'] === 0 ){
+    header("Location: completeProfile.php");
+    exit;
 }
-require_once './includes/config.php';
+require_once './includes/functions/config.php';
 require_once './includes/functions/function.php';
+
+if(isset($_GET['action']) and $_GET['action'] === 'logout'){
+    require_once './includes/functions/auth.php';
+    logout();
+}
 
 $query = ("SELECT * FROM packages");
 $result = $conn->query($query);
@@ -216,6 +225,7 @@ if (isset($_GET['packageId'])) {
 
 
 
+                        <a href="?action=logout" class="btn btn-danger position-absolute bottom-0">Logout</a>
 
 
     <script src="../bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>

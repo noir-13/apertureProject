@@ -5,6 +5,11 @@ if (!isset($_SESSION['userId'])) {
     header("Location: index.php");
     exit;
 }
+
+if(isset($_GET['action']) and $_GET['action'] === 'logout'){
+    require_once './includes/functions/auth.php';
+    logout();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,7 +91,7 @@ if (!isset($_SESSION['userId'])) {
 
                     <?php if (isset($_SESSION['fullName'])): ?>
                         <h1 class="bg-light text-dark position-absolute bottom-0"><?php echo $_SESSION['firstName']; ?></h1>
-                        <a href="logout.php" class="btn btn-danger position-absolute bottom-0">Logout</a>
+                        <a href="?action=logout" class="btn btn-danger position-absolute bottom-0">Logout</a>
                     <?php endif ?>
                     
                 </div>

@@ -1,5 +1,5 @@
 <?php
-require_once './includes/config.php';
+require_once './includes/functions/config.php';
 require_once './includes/functions/auth.php';
 require_once './includes/functions/function.php';
 session_start();
@@ -14,7 +14,7 @@ if(isset($_SESSION["userId"]) and isset($_SESSION["role"]) and  $_SESSION["role"
 
 
 $errors = [];
-
+ 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Getting the user input

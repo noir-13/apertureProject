@@ -79,7 +79,7 @@ function verifyEmail($token)
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
 
-        $stmt = $conn->prepare("UPDATE users SET isVerified = true, verificationToken = NULL WHERE userID = ?");
+        $stmt = $conn->prepare("UPDATE users SET isVerified = true, tokenExpires_at = NULL, verificationToken = NULL WHERE userID = ?");
         $stmt->bind_param('s', $user['userID']);
         $stmt->execute();
 
@@ -96,8 +96,7 @@ function verifyEmail($token)
 }
 
 // function to logIn users
-function logInUser($email, $password)
-{
+function logInUser($email, $password){
     global $conn;
 
     $query = $conn->prepare("SELECT userID, Email, Password, Role from users WHERE email = ?");
@@ -112,7 +111,8 @@ function logInUser($email, $password)
             $query->close();
             return [
                 'success' => true,
-                'role' => $user['Role'],
+                'userId' => $user['userID'],
+                'role' => $user['Role']
 
             ];
         }
@@ -132,8 +132,7 @@ function logInUser($email, $password)
     }
 }
 
-function isVerified($email)
-{
+function isVerified($email){
     global $conn;
 
     $query = $conn->prepare("SELECT * from users WHERE Email = ? and isVerified = true");
@@ -153,25 +152,31 @@ function isVerified($email)
 
 
 // checks if the user needs to complete their profile info
-// function isProfileCompleted($userId)
-// {
-//     global $conn;
+function isProfileCompleted($userId)
+{
+    global $conn;
 
-//     $query = $conn->prepare("SELECT * FROM users WHERE userID = ? AND profileCompleted = true");
-//     $query->bind_param('s', $userId);
-//     $query->execute();
-//     $result = $query->get_result();
+    $query = $conn->prepare("SELECT * FROM users WHERE userID = ? AND profileCompleted = true");
+    $query->bind_param('s', $userId);
+    $query->execute();
+    $result = $query->get_result();
 
-//     if ($result->num_rows > 0) {
-//         $user = $result->fetch_assoc();
+    if ($result->num_rows > 0) {
+      $query->close();
+      return true;
+    }
 
-//         return true;
-//     }
+    $query->close();
+    return false;
+}
 
-//     return false;
-// }
-
-function logout($userId) {}
+function logout() {
+    session_start();
+    session_unset();
+    session_destroy();
+    header("Location: index.php");
+exit;
+}
 
 function setSession($userId)
 {

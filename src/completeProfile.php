@@ -1,3 +1,72 @@
+<?php
+require_once './includes/functions/config.php';
+require_once './includes/functions/auth.php';
+require_once './includes/functions/function.php';
+
+session_start();
+
+
+
+if (!isset($_SESSION['userId'])) {
+    header("Location: logIn.php");
+    exit;
+} else{
+    $isProfileCompleted = isProfileCompleted($_SESSION['userId']);
+    if ($isProfileCompleted) {
+    if (isset($_SESSION["userId"]) and isset($_SESSION["role"]) and  $_SESSION["role"] === "Admin") {
+        header("Location: admin.php");
+        exit;
+    } else if (isset($_SESSION["userId"]) and isset($_SESSION["role"]) and $_SESSION["role"] === "User") {
+        header("Location: booking.php");
+        exit;
+    }
+}
+}  
+
+$errors = [];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $firstName = trim($_POST['fname']);
+    $lastName = trim($_POST['lname']);
+    $contact = trim($_POST['contactInput']);
+    $fullName = $firstName . " " . $lastName;
+
+    if (empty($firstName)) {
+        $errors['fname'] = "First Name is required";
+    }
+
+    if (empty($lastName)) {
+        $errors['lname'] = "Last name is required";
+    }
+
+    if (empty($contact)) {
+        $errors['contact'] = "Contact number is required";
+    } else if (strlen($contact) !== 11) {
+        $errors['contact'] = "Invalid contact number";
+    }
+
+    if (empty($errors)) {
+        $completeProfile = saveUserProfile($_SESSION['userId'], $firstName, $lastName, $fullName, $contact);
+
+        if ($completeProfile) {
+            $_SESSION['firstName'] = $firstName;
+            $_SESSION['lastName'] = $lastName;
+            $_SESSION['fullName'] = $fullName;
+            if ($_SESSION['role'] === 'Admin') {
+                header("Location: admin.php");
+                exit;
+            } else {
+                header("Location:booking.php");
+                exit;
+            }
+        }else {
+        $errors['submitError'] = "Something went wrong";
+    }
+    } 
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -21,7 +90,7 @@
             <div class="row justify-content-center align-items-center bg-white shadow p-3 rounded-5  ">
 
                 <div class="col position-relative">
-                   
+
 
                     <form action="" method="POST" class="p-4">
 
@@ -46,16 +115,17 @@
                         <!-- Phone  -->
 
                         <div class="mb-2">
-                            <label class="form-label" for="email">Contact No.<span class="text-danger">*</span></label>
-                            <input type="text" name="email" id="email" class="form-control <?php echo (!isset($errors['email']) ? '' : 'is-invalid')  ?> " placeholder="e.g., 09827386287" required>
-                            <?php if (isset($errors['email'])): ?>
-                                <p class="text-danger"><?php echo $errors['email'] ?></p>
+                            <label class="form-label" for="contactInput">Contact No.<span class="text-danger">*</span></label>
+                            <input type="text" name="contactInput" id="contactInput" class="form-control <?php echo (!isset($errors['contact']) ? '' : 'is-invalid')  ?> " placeholder="e.g., 09827386287" required>
+                            <?php if (isset($errors['contact'])): ?>
+                                <p class="text-danger"><?php echo $errors['contact'] ?></p>
                             <?php endif ?>
                         </div>
 
-                        <!-- Password -->
 
-                      
+                        <?php if (isset($errors['submitError'])): ?>
+                            <p class="text-danger"><?php echo $errors['submitError'] ?></p>
+                        <?php endif ?>
 
                         <!-- Check Terms and Condition -->
 
@@ -64,11 +134,11 @@
                             <label for="termsCheck" id="termsLabel" class="form-check-label"><small>By creating an account, you confirm that you have read, understood, and agreed to the <a href="#" type="button" data-bs-toggle="modal" data-bs-target="#dataModal">Terms and Conditions and Privacy Notice.</a></small></label>
                         </div>
 
-                        <?php include "./includes/modals/terms.php"?>
+                        <?php include "./includes/modals/terms.php" ?>
 
-                     
-                            <input type="submit" class="btn w-100 bg-dark text-light mb-1" value="Complete Profile">
-                            
+
+                        <input type="submit" class="btn w-100 bg-dark text-light mb-1" value="Complete Profile" id="profileSubmitBtn" disabled>
+
 
                     </form>
                 </div>
@@ -89,6 +159,3 @@
 </body>
 
 </html>
-
-
-

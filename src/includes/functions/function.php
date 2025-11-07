@@ -96,4 +96,18 @@
     }
 
 
-    function saveUserProfile($userId, $data) {}
+    function saveUserProfile($userId, $firstName, $lastName, $fullName, $contact) {
+        global $conn;
+
+       
+
+        $query = $conn->prepare("UPDATE users SET FirstName = ?, LastName = ?, FullName = ?, contactNo = ?, profileCompleted = true WHERE userID = ?");
+        $query->bind_param('sssss', $firstName, $lastName, $fullName, $contact, $userId);
+     
+        if($query->execute()){
+            $query->close();
+            return true;
+        } 
+        $query->close();
+        return false;
+    }

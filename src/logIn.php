@@ -1,5 +1,5 @@
 <?php
-require_once './includes/config.php';
+require_once './includes/functions/config.php';
 require_once './includes/functions/auth.php';
 require_once './includes/functions/function.php';
 session_start();
@@ -40,13 +40,22 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
             $isEmailVerified = isVerified($email);
 
             if ($isEmailVerified) {
-                setSession($result['userId']);
+                $isProfileCompleted = isProfileCompleted($result['userId']);
 
-                if ($result['role'] === 'Admin') {
-                    header("Location: admin.php");
-                    exit;
+                if ($isProfileCompleted) {
+                    setSession($result['userId']);
+                    if ($result['role'] === 'Admin') {
+                        header("Location: admin.php");
+                        exit;
+                    } else {
+                        header("Location:booking.php");
+                        exit;
+                    }
                 } else {
-                    header("Location:booking.php");
+                    $_SESSION['email'] = $email;
+                    $_SESSION['role'] = $result['role'];
+                    $_SESSION['userId'] = $result['userId'];
+                    header("Location:completeProfile.php");
                     exit;
                 }
             } else {
@@ -179,7 +188,7 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
                 allowOutsideClick: false
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = 'login.php';
+                    window.location.href = 'logIn.php';
                 }
             });
         </script>
