@@ -2,10 +2,8 @@
 require_once './includes/functions/config.php';
 require_once './includes/functions/function.php';
 require_once './includes/functions/auth.php';
+require_once './includes/functions/session.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 
 if (!isset($_SESSION['userId']) or !isset($_SESSION['isVerified']) or $_SESSION['isVerified'] === 0) {
     header("Location: logIn.php");
@@ -111,7 +109,7 @@ if (isset($_GET['packageId'])) {
 
                             <div class="mb-2">
                                 <label class="form-label" for="phone">Contact No.<span class="text-danger">*</span></label>
-                                <input type="text" name="phone" id="phone" class="form-control" value="<?= htmlspecialchars($_SESSION['contact'] ?? ''); ?>" readonly>
+                                <input type="text" name="phone" id="phone" class="form-control text-muted" value="<?= htmlspecialchars($_SESSION['contact'] ?? ''); ?>" readonly>
                             </div>
 
 

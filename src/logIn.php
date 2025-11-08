@@ -2,10 +2,10 @@
 require_once './includes/functions/config.php';
 require_once './includes/functions/auth.php';
 require_once './includes/functions/function.php';
+require_once './includes/functions/csrf.php';
+require_once './includes/functions/session.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
 
 if (isset($_SESSION["userId"]) and isset($_SESSION["role"]) and  $_SESSION["role"] === "Admin" and isset($_SESSION["isVerified"]) and  $_SESSION["isVerified"]) {
     header("Location: admin.php");
@@ -115,16 +115,18 @@ if ($_SERVER["REQUEST_METHOD"] === 'POST') {
 
         <a href="index.php"><img src="./assets/logo.png" alt="" id="logo"></a>
 
-        <div class="container justify-content-center px-4 p-md-3">
+        <div class="container justify-content-center px-2 p-md-4">
             <div class="row justify-content-center align-items-center bg-white shadow p-3 rounded-5">
 
-                <div class="col d-none d-lg-inline p-4 rounded-4 bg-secondary overflow-hidden">
+                <div class="col d-none d-lg-inline p-2 rounded-4 bg-secondary overflow-hidden">
                     <img src="./assets/undraw_secure-login_m11a (1).svg" class="img-fluid object-fit-cover" alt="">
                 </div>
 
 
-                <div class="col">
-                    <form action="" method="POST" class="p-4">
+                <div class="col p-0">
+                    <form action="" method="POST" class="p-2 p-md-4">
+                        <?php csrfField() ?>
+                        
                         <div class="text-center mb-3">
                             <h1 class=" display-3 m-0 serif">Log in</h1>
                             <p>Please enter your registered email address and password to securely access your Aperture account.</p>

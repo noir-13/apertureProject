@@ -3,10 +3,9 @@ require_once './includes/functions/config.php';
 require_once './includes/functions/auth.php';
 require_once './includes/functions/function.php';
 require_once './includes/functions/csrf.php';
+require_once './includes/functions/session.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
 
 if(isset($_SESSION["userId"]) and isset($_SESSION["role"]) and  $_SESSION["role"] === "Admin" and isset($_SESSION["isVerified"]) and  $_SESSION["isVerified"]){
     header("Location: admin.php");
